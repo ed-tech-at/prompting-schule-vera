@@ -1,0 +1,1533 @@
+html {
+  background-color: var(--color-primary-dark);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Jost', sans-serif;
+
+
+  color: var(--color-black);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  margin: 0;
+  margin-bottom: 1em;
+  padding: 0;
+  color: var(--color-primary);
+}
+
+h1:has(+ p), h2:has(+ p), h3:has(+ p) {
+  margin-bottom: 0.2em;
+}
+h1+ p, h2+ p, h3+ p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 1em;
+}
+
+a {
+  color: var(--color-link);
+  /* text-decoration: none; */
+}
+a:hover {
+  color: var(--color-link-light);
+}
+
+:root {
+
+  --color-background: #e2f3f6;
+  --color-white: #fff;
+  --color-black: #000;
+  --color-gray: #808080;
+
+
+  --color-primary: #01abbb;
+  --color-primary: #00a1af;
+  --color-primary: #0097a4;
+  --color-primary-hc: #03646d;
+  --color-primary-light: #05C2D3;
+  --color-primary-light: #04a4b3;
+  --color-primary-lightest: #34c5d27c;
+  --color-primary-dark: #017C88;
+  --color-primary-darkest: #016069;
+
+  --color-link: #093CC6;
+  --color-link-light: #1B4EDA;
+  --color-link-lightest: #466dd974;
+  --color-link-lightest: #c1d2ff;
+  --color-link-dark: #072D96;
+  --color-link-darkest: #052375;
+
+  --color-secondary: #FFAD00;
+  --color-secondary-light: #ffba24;
+  --color-secondary-lightest: #ffeec8;
+  --color-secondary-dark: #DF9700;
+  --color-secondary-darkest: #AD7500;
+
+  --color-complementary: #FF7800;
+  --color-complementary-light: #fc8823;
+  --color-complementary-lightest: #ff973c6d;
+  --color-complementary-dark: #DF6900;
+  --color-complementary-darkest: #AD5200;
+
+
+  --color-red: #E53935;
+  --color-red-light: #EF5350;
+  --color-red-lightest: #f9b2b274;
+  --color-red-dark: #C62828;
+  --color-red-darkest: #B71C1C;
+
+  --color-green: #43A047;
+  --color-green-light: #66BB6A;
+  --color-green-lightest: #bce8c574;
+  --color-green-lightest: #a9dbab;
+  --color-green-dark: #2E7D32;
+  --color-green-darkest: #1B5E20;
+
+
+}
+
+
+/* jost-100 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 100;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-100.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-100italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 100;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-100italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-200 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 200;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-200.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-200italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 200;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-200italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-300 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-300.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-300italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 300;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-300italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-500 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-500.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-500italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 500;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-500italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-600 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-600.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-600italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 600;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-600italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-700 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-700italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 700;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-700italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-800 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 800;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-800.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-800italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 800;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-800italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-900 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: normal;
+  font-weight: 900;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-900.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jost-900italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Jost';
+  font-style: italic;
+  font-weight: 900;
+  src: url('/fonts/jost-v18-latin/jost-v18-latin-900italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+
+/* jetbrains-mono-100 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-100.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-100italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 100;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-100italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-200 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 200;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-200.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-200italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 200;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-200italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-300 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-300.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-300italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 300;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-300italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-500 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-500.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-500italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 500;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-500italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-600 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-600.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-600italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 600;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-600italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-700 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-700italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 700;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-700italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-800 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 800;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-800.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* jetbrains-mono-800italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 800;
+  src: url('/fonts/jetbrains-mono-v20-latin/jetbrains-mono-v20-latin-800italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* https://gwfh.mranftl.com/fonts */
+
+
+
+header {
+  display: flex;
+  justify-content: space-between;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: var(--color-primary-dark);
+  border-bottom: 4px solid var(--color-primary-darkest); 
+  flex-wrap: wrap;
+  gap: 10px;
+  @media screen and (max-width: 768px) {
+    gap: 5px;
+  }
+}
+
+header a, footer a, header p {
+  color: white;
+}
+
+header a:hover, footer a:hover {
+  color: var(--color-background);
+}
+
+header .logo img {
+  height: 2em;
+  height: 38px;
+  margin-right: 10px;
+}
+
+header .logo-tugraz {
+  display: flex;
+}
+
+header .logo-tugraz img {
+  
+  height: 38px;
+
+}
+
+header .logo a {
+  text-decoration: none;
+  /* color: white; */
+}
+
+header .logo h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  color: inherit;
+  /* color: white; */
+}
+
+/* header .logo  */
+
+header .logo {
+  order: 1;
+}
+header .logo-tugraz {
+  order: 6;
+  @media screen and (max-width: 768px) {
+    order: 2;
+  }
+}
+header nav {
+  order: 4;
+}
+header .login {
+  order: 5;
+}
+
+.flex-full {
+  flex-basis: 100%;
+  height: 0;
+  order: 9;
+  display: none;
+  @media screen and (max-width: 768px) {
+    order: 2;
+    display: block;
+  }
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+
+}
+
+nav .seperator {
+  color: var(--color-background);
+}
+
+.high-contrast nav .seperator {
+  color: var(--color-white);
+}
+
+main {
+  padding: 20px;
+  max-width: 1220px;
+  margin: auto;
+  min-height: calc(100dvh - 300px);
+}
+
+body {
+  background-color: var(--color-background);
+}
+
+
+footer {
+  
+  padding: 30px;
+  background-color: var(--color-primary-dark);
+  color: white;
+  border-top: 3px solid var(--color-primary-darkest);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+footer .logo a {
+  text-decoration: none;
+}
+footer .logo h3 {
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+footer h3 {
+  color: white;
+}
+
+@media screen and (max-width: 570px) {
+  footer .logo {
+    width: 100%
+  }
+  footer .links div {
+    width: 100%;
+  }
+}
+
+footer .links {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  /* margin: 30px; */
+}
+footer .logo img {
+  height: 2em;
+  margin-right: 10px;
+
+}
+footer a {
+  text-decoration: underline;
+  color: inherit;
+}
+
+footer .links a {
+  display: block; 
+  margin-bottom: 5px;
+}
+
+
+section {
+  margin-bottom: 20px;
+}
+
+.element {
+  margin-bottom: 120px;
+}
+
+.element.negativeMarginTop {
+  margin-top: -120px;
+}
+
+mark {
+  display: block;
+  background-color: var(--color-complementary-lightest);
+  /* color: white; */
+
+  border-left: 5px solid var(--color-complementary);
+  padding: 1em 1.5em 0.8em 1.5em;
+  margin: 2em 0em 1em 0em;
+  /* border-radius: 1em; */
+}
+
+mark h2, mark h3 {
+  color: var(--color-complementary-dark);
+}
+
+
+mark.green {
+  
+  background-color: var(--color-green-lightest);
+  /* color: var(--color-green-darkest); */
+
+  border-left: 5px solid var(--color-green-darkest);
+  /* padding: 1em 1.5em 0.8em 1.5em; */
+  /* margin: 2em 0em 1em 0em; */
+  /* border-radius: 1em; */
+}
+
+mark.green h2, mark.green h3 {
+  color: var(--color-green-darkest);
+}
+
+.star mark {
+  background-color: var(--color-secondary-lightest);
+  border-left: 5px solid var(--color-secondary);
+}
+.star mark h2, .star mark h3 {
+  color: var(--color-secondary-dark);
+}
+
+.high-contrast .star mark h2, .high-contrast .star mark h3 {
+  color: var(--color-secondary-darkest);
+}
+
+.star-wrapper {
+  display: flex;
+  justify-content: center;
+}
+.star-block {
+  display: block;
+  text-align: center;
+  padding: 0.5em 1em;
+  background: var(--color-secondary-lightest);
+  width: auto;
+  margin: 1em;
+  border-radius: 1.2em;
+  /* color: var(--color-secondary); */
+  font-size: 1.2em;
+  border: 5px solid var(--color-secondary);
+  user-select: none;
+
+}
+
+.star-color {
+  color: var(--color-secondary);
+}
+
+.link-color {
+  color: var(--color-link);
+}
+
+.quiz-btn {
+  display: inline-block;
+  background: var(--color-link);
+  color: white;
+  padding: 0.5em 1em;
+  border-radius: 1em;
+}
+
+.quiz-btn:hover {
+  background: var(--color-link-light);
+  color: white;
+}
+
+.quiz-link {
+  margin-top: 4em;
+  margin-bottom: 4em;
+
+}
+
+.quiz-link h2 {
+  color: var(--color-link);
+}
+
+.quiz-questions fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+mark p {
+  margin: 0;
+}
+
+mark p + p {
+  margin-top: 0.5em;
+}
+
+.red {
+  color: var(--color-red)
+}
+.red-dark {
+  color: var(--color-red-dark);
+}
+
+form.ai {
+  /* background-color: var(--color-background-light); */
+  border: 5px solid var(--color-white);
+  border-radius: 15px;
+  padding: 0.5em 1em;
+  padding: 0;
+  margin-bottom: 1em;
+  position: relative;
+}
+
+form.ai label {
+  color: var(--color-primary-dark);
+  color: var(--color-white);
+  color: var(--color-background);
+  display: block;
+  font-weight: 600;
+  font-size: 0.8em;
+  margin-bottom: 0.5em;
+
+  position: absolute;
+  top: 0.5em;
+  left: 0.8em;
+  right: 0.5em;
+}
+
+.lessonWrapper .badges .badge-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.8em;
+  margin-bottom: 0.5em;
+  position: relative;
+  top: -5px;
+  left: -5px;
+}
+
+.lessonWrapper .badges p {
+  margin: 0;
+}
+.lessonWrapper .badges {
+  font-size: 0.95em;
+}
+
+.badge-container {
+  margin-bottom: 2em;
+}
+
+.lessonWrapper {
+  width: 400px;
+
+}
+
+.break-word {
+  word-wrap: break-word;
+}
+
+.lessonWrapper .lesson, .lessonWrapper .badges {
+  background-color: white;
+  padding: 1em;
+  border-radius: 25px;
+  /* min-width: 360px; */
+  /* width: 100%; */
+  /* flex-grow: 1; */
+  transition: all 0.3s;
+  outline: 5px solid transparent;
+  /* flex-shrink: 1; */
+
+}
+
+.lessonWrapper .lesson {
+  border-radius: 25px 25px 0 0;
+}
+
+
+.lessonWrapper .badges {
+  border-radius: 0 0 25px 25px;
+  margin-top: 8px;
+  background-color: var(--color-secondary-dark);
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.high-contrast .lessonWrapper .badges {
+  background-color: var(--color-primary-hc);
+}
+.high-contrast .lessonWrapper .button {
+  border-color: var(--color-primary-lightest);
+  background: var(--color-primary-light);
+  color: black;
+}
+
+@media (max-width: 500px) {
+  .lessonWrapper {
+    width: 290px;
+  }
+}
+
+.lessonWrapper a.lesson-link {
+  text-decoration: none;
+  color: black;
+  display: block;
+  
+  
+  
+}
+.lessonWrapper .lesson:hover {
+  outline: 5px solid var(--color-primary);
+}
+.lessonWrapper h2 {
+  text-align: center;
+}
+.lessonWrapper .emoji {
+  font-size: 3em;
+  text-align: center;
+  margin-bottom: 0em;
+}
+
+
+
+section.quiz-link {
+  border: 5px solid var(--color-white);
+  padding: 1em;
+  border-radius: 15px;
+  background-color: var(--color-link-lightest);
+}
+
+form.ai .result {
+  position: relative;
+}
+
+form.ai .result label {
+  position: relative;
+  color: black;
+  font-weight: 500;
+  /* font-size: 0.8em; */
+  left: -5px;
+  top: -5px;
+  margin: 0;
+  /* position: absolute; */
+  /* float: left; */
+
+}
+
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.clearboth {
+  clear: both;
+}
+
+.hidden {
+  display: none;
+}
+
+code {
+  font-family: 'Jetbrains Mono', monospace;
+  color: var(--color-primary);
+  font-variant-ligatures: no-contextual;
+}
+
+.high-contrast code {
+  color: var(--color-primary-hc);
+}
+
+
+/* form.ai .result .generated { */
+form.ai .result  {
+  background-color: var(--color-white);
+  font-weight: 400;
+  font-size: 1em;
+  display: block;
+  min-height: 3em;
+  padding: 10px 15px;
+  /* padding-top: 5px; */
+  margin: 10px;
+  border-radius: 10px;
+}
+
+form.ai .prompt {
+  width: 100%;
+  /* height: 100px; */
+  /* margin-bottom: 1em; */
+  padding: 2.5em 3em 1em 1em;
+  border: none;
+  color: white;
+  background-color: var(--color-primary);
+  font-family: 'Jost', sans-serif;
+  border-radius: 10px;
+
+  width: 100% !important;
+  min-height: 5.5em;
+
+  font-weight: 500;
+  font-size: 1em;
+
+  field-sizing: content;
+  display: block;
+  
+}
+
+form.ai .prompt code {
+  color: white;
+}
+
+
+.high-contrast form.ai .prompt {
+  background-color: var(--color-primary-hc);
+  
+}
+
+form.ai.note .prompt {
+  background-color: var(--color-complementary-dark);
+}
+
+form.ai.note .submit {
+  background-color: var(--color-complementary);
+  border: 2px solid var(--color-complementary-darkest);
+}
+
+form.ai.note .submit:hover {
+  background-color: var(--color-complementary-dark);
+  border: 2px solid var(--color-complementary-darkest);
+}
+
+/* form.ai .prompt::placeholder {
+  color: var(--color-background);
+} */
+
+form.ai .prompt:empty::before {
+  content: attr(placeholder);
+  color: var(--color-background);
+}
+
+
+form.ai .prompt::placeholder {
+  /* content: attr(placeholder); */
+  color: var(--color-background);
+}
+
+
+
+form.ai .submit {
+  cursor: pointer;
+  display: inline-block;
+  margin: 0.2em 1em;
+  text-align: center;
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-darkest);
+  /* color: var(--color-primary); */
+  border-radius: 10px;
+  padding: 0.2em 0.4em;
+  color: white;
+  position: relative;
+  z-index: 5;
+  font-size: 1em;
+  top: -45px;
+  right: -5px;
+  float: right;
+
+  font-family: 'Jost', sans-serif;
+
+}
+
+
+form.ai .submit:hover {
+  
+    /* color: var(--color-background); */
+    background-color: var(--color-primary-light);
+    
+}
+
+
+form.ai .submit:disabled {
+  background: var(--color-primary-lightest);
+  color: var(--color-primary-dark);
+  cursor: progress;
+}
+
+
+form.ai .ai1prompt2, form.ai .ai2prompt2,  form.ai .ai12prompt2, form.ai .laborPrompt2, form.ai .prompt2 {
+  position: relative;
+  margin-top: 0.5em;
+  /* color: var(--color-black); */
+  
+}
+form.ai .laborPrompt2 {
+  margin-bottom: 0.5em;
+}
+
+form.ai .ai1prompt2 .prompt {
+  background-color: var(--color-primary-light);
+}
+
+form.ai .ai2prompt1 .prompt {
+  background-color: var(--color-primary-light);
+}
+
+
+form.ai .ai1prompt2 label, form.ai .ai1prompt2 .prompt, form.ai .ai2prompt1 label, form.ai .ai2prompt1 .prompt {
+  color: var(--color-black);
+  user-select: none;
+}
+
+.adminView form.ai .ai1prompt2 label, .adminView form.ai .ai1prompt2 .prompt, .adminView form.ai .ai2prompt1 label, .adminView form.ai .ai2prompt1 .prompt {
+  user-select: inherit;
+}
+
+
+button, .button {
+  cursor: pointer;
+  display: inline-block;
+  background: var(--color-primary);
+  color: white;
+  border: 2px solid var(--color-primary-darkest);
+  border-radius: 10px;
+
+  font-family: 'Jost', sans-serif;
+  
+  padding-block: 1px;
+  padding-inline: 6px;
+  text-decoration: none;
+
+}
+
+.high-contrast button, .high-contrast .button {
+  background: var(--color-primary-hc);
+  /* color: white; */
+  /* border: 2px solid var(--color-primary-darkest); */
+}
+
+
+button.large, .button.large {
+  padding: 0.5em 1em;
+  font-size: 1.2em;
+}
+button.medium, .button.medium {
+  padding: 0.5em 1em;
+  font-size: 1em;
+  margin: 1em 0;
+}
+
+button:hover, .button:hover {
+  background: var(--color-primary-light);
+  color: white;
+
+}
+
+.high-contrast button:hover, .high-contrast .button:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+button.secondary, .button.secondary {
+  background: var(--color-secondary);
+  color: black;
+  border: 2px solid var(--color-secondary-darkest);
+}
+button.secondary:hover, .button.secondary:hover {
+  background: var(--color-secondary-light);
+  color: black;
+}
+
+
+button.complementary, .button.complementary {
+  background: var(--color-complementary);
+  color: white;
+  border: 2px solid var(--color-complementary-darkest);
+}
+button.complementary:hover, .button.complementary:hover {
+  background: var(--color-complementary-light);
+  color: white;
+}
+
+button.danger, .button.danger {
+  background: var(--color-red);
+  color: white;
+  border: 2px solid var(--color-red-darkest);
+}
+button.danger:hover, .button.danger:hover {
+  background: var(--color-red-light);
+  color: white;
+}
+
+
+
+.course h3 {
+  margin: 0;
+}
+.course p {
+  margin-top: 0;
+}
+
+
+.generated * {
+  color: black !important;
+  word-wrap: break-word;
+}
+
+.generated pre {
+  white-space: pre-wrap;
+}
+
+.prompt * {
+  margin: 0;
+  word-wrap: normal;
+  white-space: pre-wrap;
+}
+
+form.ai .aiLaborWorse label {
+  color: #ffdede;
+}
+form.ai .aiLabelBetter label {
+  color: #d5ffdf;
+}
+
+form.ai.note label {
+  color: #fcddc2;
+}
+
+.high-contrast form.ai .aiLaborWorse label, .high-contrast form.ai .aiLabelBetter label, .high-contrast form.ai.note label {
+  color: white;
+}
+
+.generated p, .generated ul, .generated h1, .generated h2, .generated h3, .generated h4, .generated h5, .generated h6 {
+  margin-top: 0.1em;
+  margin-bottom: 0.2em;
+}
+
+table, th, td {
+  border: 2px solid white;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.2em 0.5em;
+  hyphens: auto;
+}
+
+th {
+  background-color: var(--color-primary-lightest);
+}
+
+.aiSide {
+  display: flex;
+  gap: 1em;
+  flex-shrink: 1;
+}
+
+.aiSide .ai {
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .aiSide {
+    flex-wrap: wrap;
+    /* flex-direction: column; */
+  }
+
+  .laborSide {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+  table {
+    font-size: 0.9em;
+  }
+}
+
+
+.registerBg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(to bottom, #2f929a, #B5E3E8);
+  /* color: white; */
+  min-height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  margin: 0;
+}
+
+.registerBlock {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px 20px;
+  max-width: 400px;
+  width: 100%;
+  text-align: left;
+}
+
+.registerBlock h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--color-primary);
+}
+
+.registerBlock label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.registerBlock input[type="text"],
+.registerBlock input[type="email"],
+.registerBlock input[type="password"]
+ {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: 0px;
+    margin-bottom: 1.5em;
+    /* transition: outline 0.3s ease; */
+}
+
+.form-group input:focus {
+  outline: 2px solid var(--color-primary);
+}
+
+.registerBlock .error-message {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.registerBlock button, .registerBlock .button {
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 1.5em;
+}
+
+.registerBlock button.invert, .registerBlock .button.invert {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary-darkest);
+  transition: all .3s ease;
+}
+.registerBlock button.invert:hover, .registerBlock .button.invert:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.registerBlock .checkbox-form label {
+  color: black;
+  font-weight: 400;
+}
+
+#frontpage {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#frontpage h1,
+#frontpage h2 {
+    color: white;
+}
+
+#frontpage section {
+    margin: 0;
+}
+
+/* Hero Section */
+#frontpage .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 20px;
+    background: linear-gradient(to bottom, #2f929a, #B5E3E8);
+    color: white;
+    overflow: hidden;
+    position: relative;
+}
+.high-contrast #frontpage .hero, .high-contrast #frontpage .cta-section {
+    background: linear-gradient(to bottom, #24747a, #1e5055);
+    background: var(--color-primary-hc);
+}
+.high-contrast #frontpage .dimmed-text {
+    color: rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.high-contrast #frontpage .benefits-section {
+
+    background: var(--color-background);
+}
+
+#frontpage .hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    text-transform: uppercase;
+}
+
+#frontpage .hero p {
+    font-size: 1em;
+    margin-bottom: 30px;
+    max-width: 800px;
+    line-height: 1.6;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+}
+
+/* CTA Section */
+#frontpage .cta-section {
+    text-align: center;
+    padding: 50px 20px;
+    background: linear-gradient(to bottom, #B5E3E8, #2f929a);
+    color: white;
+}
+
+#frontpage .cta-section h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#frontpage .cta-section p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#frontpage .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+#frontpage .cta-button {
+    background-color: var(--color-secondary-light);
+    color: var(--color-primary-dark);
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.2s, color 0.3s;
+}
+
+.high-contrast #frontpage  .cta-button {
+    color: var(--color-black);
+}
+
+#frontpage .cta-button:hover {
+    color: var(--color-primary);
+    transform: scale(1.05);
+}
+.high-contrast #frontpage  .cta-button:hover {
+  color: var(--color-black);
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #frontpage .cta-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    #frontpage .cta-button {
+        width: 100%;
+    }
+}
+
+/* Dimmed Background Letters */
+#frontpage .dimmed-text {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 180px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.1);
+    z-index: 0;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Benefits Section */
+#frontpage .benefits-section {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(to bottom, #B5E3E8, #f9f9f9);
+}
+
+#frontpage .benefits-section h2 {
+    font-size: 32px;
+    color: #2f929a;
+    margin-bottom: 20px;
+}
+
+#frontpage .benefits-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 20px;
+    max-width: 1220px;
+    margin: 0 auto;
+}
+
+#frontpage .benefit-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 290px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#frontpage .benefit-icon {
+    font-size: 48px;
+    color: #2f929a;
+    margin-bottom: 15px;
+}
+
+#frontpage .benefit-title {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#frontpage .benefit-description {
+    font-size: 16px;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    #frontpage .benefits-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    #frontpage .benefit-icon {
+        font-size: 40px;
+    }
+
+    #frontpage .benefit-title {
+        font-size: 18px;
+    }
+
+    #frontpage .benefit-description {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    #frontpage .benefits-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* About Section */
+#frontpage .about-section {
+    padding: 50px 20px;
+    text-align: center;
+    background: linear-gradient(to bottom, #f9f9f9, #B5E3E8);
+}
+
+#frontpage .about-section h2 {
+    font-size: 32px;
+    color: #2f929a;
+    margin-bottom: 20px;
+}
+
+#frontpage .about-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 1220px;
+    margin: 0 auto;
+}
+
+#frontpage .about-card {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#frontpage .about-icon {
+    font-size: 48px;
+    color: #2f929a;
+    margin-right: 20px;
+}
+
+#frontpage .about-content {
+    text-align: left;
+}
+
+#frontpage .about-title {
+    font-size: 20px;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#frontpage .about-description {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    #frontpage .about-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #frontpage .about-icon {
+        margin: 0 0 20px;
+    }
+
+    #frontpage .about-content {
+        text-align: center;
+    }
+}
+
+.langSelect {
+  font-size: 1.7em;
+  margin-right: .3em;
+  display: flex;
+  gap: 0.3em;
+}
+.langSelect a {
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+.langSelect a:hover {
+  /* text-decoration: underline; */
+  opacity: 1;
+}
+.langSelect a img {
+  height: 1em;
+}
