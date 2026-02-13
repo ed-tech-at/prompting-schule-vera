@@ -17,3 +17,34 @@ Self-hosting, modification, and redistribution of this project are permitted und
 *Prompting.School: A Design-Based Research Approach to Teaching AI Literacy through Guided Prompt Engineering Practice* 
 
 Paper accepted at ICL2025, currently in revision.
+
+# Local Development Startguide
+
+## Setup Local PostgreSQL Database
+Example Database Setup in with Docker Compose-File in [/docker/postgresql/docker-compose.yml](./docker/postgresql/)
+
+Instructions:
+1. Start PostgreSQL Server
+   ```bash
+   cd docker/postgresql
+   docker compose up -d
+   cd ..
+   cd ..
+   ```
+2. Test if .env is available, if not copy `.env-example`
+   ```bash
+   cd sveltekit
+   [ -f .env ] && echo ".env available" || echo ".env missing, please execute: cp .env-example .env"
+   cd ..
+   ```
+3. Update node modules and database schema with prisma
+   ```bash
+   cd sveltekit
+   npm ci
+   npx prisma push db
+   ```
+
+
+   
+
+
