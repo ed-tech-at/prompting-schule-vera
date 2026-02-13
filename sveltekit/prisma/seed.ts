@@ -14,7 +14,7 @@ async function main() {
   const sql = fs.readFileSync(filePath, 'utf8')
 
   const statements = sql
-    .split(';')
+    .split('\n')
     .map(s => s.trim())
     .filter(s => s.length > 0)
 

@@ -27,8 +27,3 @@ services:
       PGADMIN_DEFAULT_PASSWORD: adminPass
     ports:
       - 8085:80
-
-# networks:
-  # postgresql_net:
-    # driver: bridge
-
