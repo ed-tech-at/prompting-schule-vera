@@ -26,7 +26,7 @@ Example Database Setup in with Docker Compose-File in [/docker/postgresql/docker
 Instructions:
 1. Start PostgreSQL Server
    ```bash
-   cd docker/postgresql
+   cd docker/postgresql-prompting-schule
    docker compose up -d
    cd ..
    cd ..
@@ -41,7 +41,26 @@ Instructions:
    ```bash
    cd sveltekit
    npm ci
-   npx prisma push db
+   npx prisma db push
+   cd ..
+   ```
+4. Insert seed data
+   ```bash
+   cd sveltekit
+   npm run seed-prisma-db
+   cd ..
+   ```
+5. Display Database, open http://localhost:5555
+   ```bash
+   cd sveltekit
+   npx prisma studio
+   cd ..
+   ```
+6. Optional: Delete all courses in Database (truncate), if seed is not possible
+   ```bash
+   cd sveltekit
+   npm run truncate-prisma-db
+   cd ..
    ```
 
 
