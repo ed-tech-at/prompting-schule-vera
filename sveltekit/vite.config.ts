@@ -8,6 +8,7 @@ export default defineConfig({
         allowedHosts: ['prompting.schule', 'prompting.school'],
     },
     test: {
+        reporters: ['verbose'],
         projects: [{
             extends: "./vite.config.ts",
             plugins: [svelteTesting()],
@@ -18,7 +19,7 @@ export default defineConfig({
                 clearMocks: true,
                 include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
                 exclude: ['src/lib/server/**'],
-                setupFiles: ['./vitest-setup-client.ts']
+                setupFiles: ['./vitest-setup-client.ts', './src/vitest/registerMatchers.js', './src/vitest/cleanupDom.js']
             }
         }, {
             extends: "./vite.config.ts",
