@@ -3,7 +3,7 @@
 import { prisma } from '$lib/server/db';
 
 
-import { env } from '$env/dynamic/private';
+import { env } from '$env/dynamic/public';
 
 
 import { error, json } from '@sveltejs/kit';
@@ -13,10 +13,11 @@ import bakery from 'openbadges-bakery-v3';
 import { newBadgeHash } from '$lib/server/dbUtils';
 
 import { requireLogin } from '$lib/server/jwt';
+import { hasEnoughStars } from '$lib/server/lessonStars';
 
 import QRCode from 'qrcode';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import sharp from 'sharp';
 
 function fontToBase64(filePath: string) {
@@ -52,8 +53,11 @@ export async function POST({ request, cookies }) {
       return json({ success: false, error: 'Lesson not found' });
     }
     
-    if (lesson?.starsNeeded > 0) {
-      
+    if (lesson.starsNeeded > 0) {
+      // Die Oberfläche zeigt das Quiz erst ab genügend Sternen; hier serverseitig erzwingen.
+      if (!(await hasEnoughStars(user.id, lesson))) {
+        return json({ success: false, error: 'Not enough stars' });
+      }
 
       const bestQuiz = await prisma.userQuizAttempt.findFirst({
         where: {
@@ -90,10 +94,13 @@ export async function POST({ request, cookies }) {
 
     // console.log('aggregate', aggregate);
 
-    if (aggregate._sum.promptsTried === 0) {
+    // Ohne Fortschrittszeilen ist die Summe null, nicht 0.
+    if (!aggregate._sum.promptsTried) {
       return json({ success: false, error: 'No prompts tried' });
     }
 
+    // Bewusst so: Der Badge bescheinigt die E-Mail, mit der das Konto angelegt wurde.
+    // Eine E-Mail-Verifikation vor dem Ausstellen ist nicht vorgesehen.
     const hash = await newBadgeHash(user.id, lessonId);
 
     const badge = await prisma.badge.create({
@@ -114,22 +121,25 @@ export async function POST({ request, cookies }) {
 
   if (action === "getBadgeImg") {
     const badgeDb = await prisma.badge.findFirst({ where: { userId: user.id, hash: formData.hash } });
+    if (!badgeDb?.lessonId) {
+      return json({ success: false, error: 'Badge not found' }, { status: 404 });
+    }
     
     const badgePath = path.resolve('static/badge/badge_v2_1.png');
     // const boldFontBase64 = fontToBase64('static/badge/Jost-Bold.ttf');
     // const boldFontBase64 = fontToBase64('static/fonts/jost-v18-latin/jost-v18-latin-100italic.woff2');
     // const fontLesson = path.resolve('static/badge/Jost-Regular.ttf');
 
-    const lesson = await prisma.lesson.findUnique({ where: { id: badgeDb?.lessonId } });
+    const lesson = await prisma.lesson.findUnique({ where: { id: badgeDb.lessonId } });
     const course = await prisma.course.findUnique({ where: { id: lesson?.courseId } });
     let textSelbstueberpruefung = '';
 
-    if (lesson?.starsNeeded > 0) {
+    if ((lesson?.starsNeeded ?? 0) > 0) {
       textSelbstueberpruefung = ' und die Selbstüberprüfung bestanden';
     }
     
 
-const certUrl = env.APP_URL + `/badge/${badgeDb?.hash}/${user.email}`; // falls QR auf externe Assertion zeigt
+const certUrl = env.PUBLIC_APP_URL + `/badge/${badgeDb?.hash}/${user.email}`; // falls QR auf externe Assertion zeigt
 	const qrBuffer = await QRCode.toBuffer(certUrl, {
     color: {
       dark: "#009CB1",
@@ -266,20 +276,20 @@ const courseEsc = escapeXml(course?.name);
 const assertion = {
   "@context": "https://w3id.org/openbadges/v2",
   "type": "Assertion",
-  "id": env.APP_URL + "/badge/" + badgeDb?.hash + "/" + user.email + "/json.json",
+  "id": env.PUBLIC_APP_URL + "/badge/" + badgeDb?.hash + "/" + user.email + "/json.json",
   "recipient": {
     "type": "email",
     "hashed": false,
     "identity": user.email
   },
-  "badge": env.APP_URL + "/badge/class/" + course?.URL + "/" + lesson?.URL + "/json.json",
+  "badge": env.PUBLIC_APP_URL + "/badge/class/" + course?.URL + "/" + lesson?.URL + "/json.json",
   "issuedOn": badgeDb?.createdAt.toISOString(),
   "verification": {
     "type": "HostedBadge",
-    "url": env.APP_URL + "/badge/" + badgeDb?.hash + "/" + user.email + "/json.json"
+    "url": env.PUBLIC_APP_URL + "/badge/" + badgeDb?.hash + "/" + user.email + "/json.json"
   },
-  "image": env.APP_URL + "/badge/class/" + course?.URL + "/" + lesson?.URL + "/image.png",
-  "evidence": env.APP_URL + "/badge/" + badgeDb?.hash + "/" + user.email
+  "image": env.PUBLIC_APP_URL + "/badge/class/" + course?.URL + "/" + lesson?.URL + "/image.png",
+  "evidence": env.PUBLIC_APP_URL + "/badge/" + badgeDb?.hash + "/" + user.email
   };
 
   // console.log('Assertion:', assertion);
@@ -308,9 +318,9 @@ const assertion = {
 }
 
 // Funktion, die das Backen des Badges als Promise kapselt
-function bakeBadge(imageBuffer, assertion) {
+function bakeBadge(imageBuffer: Buffer, assertion: object): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    bakery.bake({ image: imageBuffer, assertion }, (err, bakedImage) => {
+    bakery.bake({ image: imageBuffer, assertion }, (err: Error | null, bakedImage: Buffer) => {
       if (err) {
         reject(err);
       } else {

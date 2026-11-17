@@ -1,0 +1,221 @@
+import { OpenAI } from 'openai';
+import { OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL } from '$env/static/private';
+import { stringify } from 'openai/internal/qs/stringify.mjs';
+
+type openAiParams = {
+  messages: { role: 'developer' | 'user' | 'assistant'; content: string }[];
+  maxTokens?: number;
+  reasoningEffort?: 'none' | 'minimal' | 'low';
+  saveToDb: (text: string, usage: { promptTokens?: number; completionTokens?: number }) => Promise<void>;
+};
+
+export type ParsedBirthDate = {
+  birthDate: string | null;
+  usage: { promptTokens?: number; completionTokens?: number };
+};
+
+export async function parseBirthDateWithAi(input: string): Promise<ParsedBirthDate> {
+  const client = new OpenAI({
+    apiKey: OPENAI_API_KEY,
+    baseURL: OPENAI_BASE_URL
+  });
+
+  const response = await client.responses.create({
+    model: OPENAI_MODEL,
+    instructions: 'Du bist ausschließlich ein Datumsparser. Lies das Geburtsdatum aus der Eingabe. Berechne nichts. Antworte ausschließlich mit dem eindeutigen Datum im Format TT.MM.JJJJ oder mit UNKNOWN, wenn kein eindeutiges Geburtsdatum erkennbar ist. Kein weiterer Text.',
+    input,
+    reasoning: { effort: 'low' },
+    text: { verbosity: 'low' } as never,
+    max_output_tokens: 256
+  });
+
+  const content = response.output_text.trim();
+  const match = /\b(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})\b/.exec(content);
+  const birthDate = match
+      ? `${match[1].padStart(2, '0')}.${match[2].padStart(2, '0')}.${match[3]}`
+      : null;
+
+  return {
+    birthDate,
+    usage: {
+      promptTokens: response.usage?.input_tokens,
+      completionTokens: response.usage?.output_tokens
+    }
+  };
+}
+
+const MEMORY_SUMMARY_PROMPTS = {
+    de: {
+        instructions: 'Erstelle ein kurzes, sachliches Kurzzeitgedächtnis für eine Pizzabestellung. Behalte nur bestätigte Bestelldetails, Ergänzungen, Änderungen. Fasse frühere Angaben zusammen statt sie zu zitieren. Füge keine Informationen hinzu, es muss eine reine Zusammenfassung sein. Höchstens 80 Wörter.',
+        previous: 'Bisherige Zusammenfassung',
+        none: '(keine)',
+        message: 'Neue Nachricht',
+        response: 'Antwort des Assistenten'
+    },
+    en: {
+        instructions: 'Write a short, factual short-term memory for a pizza order. Keep only confirmed order details, additions and changes. Summarise earlier information instead of quoting it. Do not add any information; it must be a pure summary. At most 80 words.',
+        previous: 'Previous summary',
+        none: '(none)',
+        message: 'New message',
+        response: "Assistant's answer"
+    }
+};
+
+export async function summarizeConversationMemory(
+    previousSummary: string,
+    userMessage: string,
+    assistantResponse: string,
+    lang: keyof typeof MEMORY_SUMMARY_PROMPTS = 'de'
+): Promise<string> {
+    const prompt = MEMORY_SUMMARY_PROMPTS[lang];
+
+    const client = new OpenAI({
+        apiKey: OPENAI_API_KEY,
+        baseURL: OPENAI_BASE_URL
+    });
+
+    const response = await client.responses.create({
+        model: OPENAI_MODEL,
+        instructions: prompt.instructions,
+        input: `${prompt.previous}:\n${previousSummary || prompt.none}\n\n${prompt.message}:\n${userMessage}\n\n${prompt.response}:\n${assistantResponse}`,
+        reasoning: { effort: 'low' },
+        text: { verbosity: 'low' } as never,
+        max_output_tokens: 200
+    });
+
+    return response.output_text.trim() || previousSummary;
+}
+
+export async function streamAiResponse({
+  messages,
+  saveToDb,
+  maxTokens = 10000,
+  reasoningEffort = 'low'
+}: openAiParams) {
+  const openaiLLM = new OpenAI({
+    apiKey: OPENAI_API_KEY,
+    baseURL: OPENAI_BASE_URL,
+  });
+
+  let stream;
+
+  try {
+    stream = await openaiLLM.responses.create({
+      model: OPENAI_MODEL,
+      input: messages,
+      max_output_tokens: maxTokens,
+      reasoning: {
+        effort: reasoningEffort as OpenAI.ReasoningEffort
+      },
+      text: { verbosity: 'low' } as never,
+      stream: true
+    });
+  } catch (err: any) {
+    if (err.code === 'content_filter') {
+      const errorMessage =
+        // json({error: '⚠️ Deine Eingabe konnte leider nicht verarbeitet werden, da sie gegen die Inhaltsrichtlinien verstößt.'});
+         '⚠️ Ihre Eingabe konnte leider nicht verarbeitet werden, da sie gegen die Inhaltsrichtlinien verstößt.';
+
+      // Optional: log the actual filtered message for moderation/debugging
+      // const userInput = messages.map((m) => `[${m.role}] ${m.content}`).join('\n');
+
+      
+      const text = "[Gefiltert]" + stringify(messages);
+      // console.log ("error for db:" + text);
+      // console.log ("type error for db:" + typeof(text));
+      const usage = {
+        promptTokens: 0,
+        completionTokens: 0
+      };
+
+      await saveToDb(text, usage);
+
+      const response = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(errorMessage));
+          controller.close();
+        }
+      });
+
+      return new Response(response, {
+        status: 451,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8'
+        }
+      });
+    }
+
+    // Other unexpected errors
+    // console.error('Azure OpenAI error:', err);
+    throw err;
+  }
+
+  let fullText = '';
+  let usage: { promptTokens?: number; completionTokens?: number } = {};
+  const encoder = new TextEncoder();
+
+  const streamResponse = new ReadableStream({
+    async start(controller) {
+      for await (const event of stream) {
+        // console.log(event);
+
+        if (event.type === 'response.output_text.delta') {
+          const delta = (event as any).delta as string | undefined;
+          if (delta) {
+            fullText += delta;
+            controller.enqueue(encoder.encode(delta));
+          }
+        }
+
+        if (event.type === 'response.completed') {
+          const completed = (event as any).response;
+          usage = {
+            promptTokens: completed?.usage?.input_tokens,
+            completionTokens: completed?.usage?.output_tokens
+          };
+        }
+      }
+
+      // Erst speichern, dann Footer senden: Der Client lädt nach dem Footer z. B. die
+      // Sterne neu und soll dabei den gerade gespeicherten Stand sehen.
+      try {
+        await saveToDb(fullText, usage);
+      } catch (saveError) {
+        console.error('Fehler beim Speichern der KI-Antwort:', saveError);
+      }
+
+      // Sende Footer
+      const footer = JSON.stringify({ __footer: true, ...usage });
+      controller.enqueue(encoder.encode('\n[__FOOTER__]' + footer));
+
+      controller.close();
+    }
+  });
+
+  return new Response(streamResponse, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked'
+    }
+  });
+}
+
+// Pre-translation for the course translate view. Not streamed: the editor fills
+// one field at a time and needs the complete text.
+export async function translateWithAi(instructions: string, text: string): Promise<string> {
+  const client = new OpenAI({
+    apiKey: OPENAI_API_KEY,
+    baseURL: OPENAI_BASE_URL
+  });
+
+  const response = await client.responses.create({
+    model: OPENAI_MODEL,
+    instructions,
+    input: text,
+    reasoning: { effort: 'low' },
+    text: { verbosity: 'low' } as never,
+    max_output_tokens: 16000
+  });
+
+  return response.output_text.trim();
+}

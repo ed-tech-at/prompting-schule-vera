@@ -8,7 +8,9 @@ import { prisma } from '$lib/server/db';
 import { createJWT } from './jwt';
 import { json } from '@sveltejs/kit';
 import { newUserUUID } from '$lib/server/dbUtils.js';
+import { isSingleEmailAddress } from '$lib/server/email';
 
+import { getCookiePath, withBase } from '$lib/server/subfolder';
 
 
 export async function hashPassword(password: string) {
@@ -36,7 +38,16 @@ export async function comparePasswordV2(password: string, hashedPassword: string
   return await bcrypt.compare(password + pepper + userId, hashedPassword);
 }
 
+// SSO-only-Modus: Mit gesetztem KEYCLOAK_CLIENT_SECRET gibt es keine lokalen Passwortkonten.
+export function passwordAuthDisabled(): boolean {
+  return !!env.KEYCLOAK_CLIENT_SECRET;
+}
+
 export async function login(email: string, password: string): Promise<Response> {
+  if (passwordAuthDisabled()) {
+    return json({ success: false, error: "Die Anmeldung mit Passwort ist deaktiviert." }, { status: 403 });
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
@@ -45,6 +56,10 @@ export async function login(email: string, password: string): Promise<Response> 
 
   if (user.isDeleted) {
     return json({ success: false, error: "Benutzer existiert nicht." });
+  }
+
+  if (user.blockedAt) {
+    return json({ success: false, error: "Dieses Benutzerkonto ist gesperrt." }, { status: 403 });
   }
 
   let passwordMatch = false;
@@ -77,20 +92,17 @@ export async function login(email: string, password: string): Promise<Response> 
   }
 
   return createJWTResponse(user);
-
-
-  const token = createJWT({ id: user.id, email: user.email, isAdmin: user.isAdmin });
-
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: {
-      'Set-Cookie': `jwt=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`,
-      'Content-Type': 'application/json'
-    }
-  });
 }
 
 export async function register(email: string, password: string): Promise<Response> { /* | { success: false; error: string }*/
+  if (passwordAuthDisabled()) {
+    return json({ success: false, error: "Die Registrierung mit Passwort ist deaktiviert." }, { status: 403 });
+  }
+
+  if (!isSingleEmailAddress(email)) {
+    return json({ success: false, error: "Ungültige E-Mail-Adresse." }, { status: 400 });
+  }
+
   const existingUser = await prisma.user.findUnique({ where: { email } });
   
   if (existingUser) {
@@ -120,16 +132,6 @@ export async function register(email: string, password: string): Promise<Respons
   });
 
   return createJWTResponse(newUser);
-
-  const token = createJWT({ id: newUser.id, email: newUser.email, isAdmin: newUser.isAdmin });
-
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: {
-      'Set-Cookie': `jwt=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`,
-      'Content-Type': 'application/json'
-    }
-  });
 }
 
 
@@ -144,45 +146,53 @@ type ssoUser = {
 
 export async function loginSso(user: ssoUser): Promise<Response> {
   
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  
-  if (existingUser) {
-    const loginResult = await login(email, password);
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      cryptVersion: { in: [3, 4] },
+      password: user.preferred_username
+    }
+  });
 
-    if ('success' in loginResult && loginResult.success === false) {
-      return json({
-        success: false,
-        error: "Benutzer existiert bereits, aber das Passwort ist falsch."
-      });
+  if (existingUser) {
+    if (existingUser.isDeleted) {
+      return json({ success: false, error: "Benutzer existiert nicht." }, { status: 403 });
     }
 
-    return loginResult;
+    if (existingUser.blockedAt) {
+      return json({ success: false, error: "Dieses Benutzerkonto ist gesperrt." }, { status: 403 });
+    }
+
+    return createJWTResponseSSO(existingUser);
+  }
+
+  // Ein lokales Konto mit derselben E-Mail darf nicht stillschweigend übernommen werden
+  // und soll keinen ungefangenen Unique-Constraint-Fehler auslösen.
+  const emailTaken = await prisma.user.findUnique({ where: { email: user.email } });
+  if (emailTaken) {
+    return json(
+      { success: false, error: "Für diese E-Mail-Adresse existiert bereits ein lokales Konto. Bitte wenden Sie sich an die Betreuung." },
+      { status: 409 }
+    );
   }
 
   const uuid = await newUserUUID();
-  const hashedPassword = await hashPasswordV2(password, uuid); // assuming hashPassword handles v2
-  const cryptVersion = 2;
+  // const hashedPassword = await hashPasswordV2(password, uuid); // assuming hashPassword handles v2
+
+  const obKey = 'CO-OBFUSCATED-C-BD';
+  const hasObfuscated = obKey in user && !!(user as Record<string, any>)[obKey];
+
+  let cryptVersion = hasObfuscated ? 4 : 3; // 4: has BD, else 3
 
   const newUser = await prisma.user.create({
     data: {
       id: uuid,
-      email,
-      password: hashedPassword,
+      email: user.email,
+      password: user.preferred_username,
       cryptVersion
     }
   });
 
-  return createJWTResponse(newUser);
-
-  const token = createJWT({ id: newUser.id, email: newUser.email, isAdmin: newUser.isAdmin });
-
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: {
-      'Set-Cookie': `jwt=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`,
-      'Content-Type': 'application/json'
-    }
-  });
+  return createJWTResponseSSO(newUser);
 }
 
 
@@ -193,12 +203,34 @@ export function createJWTResponse(user: { id: string; email: string; isAdmin: nu
     isAdmin: user.isAdmin
   });
 
-  // 'Set-Cookie': `jwt=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`,
+  const path = getCookiePath();
+
   return new Response(JSON.stringify({ success: true }), {
     status: 200,
     headers: {
-      'Set-Cookie': `jwt=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`,
+      'Set-Cookie': `jwt=${token}; Path=${path}; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`,
       'Content-Type': 'application/json'
+    }
+  });
+}
+
+
+export function createJWTResponseSSO(user: { id: string; email: string; isAdmin: number }): Response {
+  const token = createJWT({
+    id: user.id,
+    email: user.email,
+    isAdmin: user.isAdmin
+  });
+
+  const path = getCookiePath();
+  const pathProfil = withBase('/profil');
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      'Set-Cookie': `jwt=${token}; Path=${path}; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`,
+      // 'Content-Type': 'application/json',
+      Location: pathProfil
     }
   });
 }
