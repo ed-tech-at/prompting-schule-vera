@@ -313,9 +313,17 @@ const assertion = {
 	});
   
   }
-
-
+  
+  // Handle unsupported actions
+  return json(
+    {
+      success: false,
+      error: 'Invalid action'
+    },
+    { status: 400 }
+  );
 }
+
 
 // Funktion, die das Backen des Badges als Promise kapselt
 function bakeBadge(imageBuffer: Buffer, assertion: object): Promise<Buffer> {
