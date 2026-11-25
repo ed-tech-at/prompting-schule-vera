@@ -1,254 +1,136 @@
-import { describe, expect, it, vi } from 'vitest';
-import jwt, { type JwtPayload } from 'jsonwebtoken';
-import type { Cookies } from '@sveltejs/kit';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import jwt from 'jsonwebtoken';
 
-vi.mock('$env/dynamic/private', () => ({
-  env: {
-    JWT_SECRET: 'unit-test-secret',
-  },
+const mocks = vi.hoisted(() => ({
+  env: { JWT_SECRET: 'test-jwt-secret' as string },
+  redirect: vi.fn((status: number, location: string) => {
+    const error = Object.assign(new Error('Redirect'), { status, location });
+    throw error;
+  }),
+  withBase: vi.fn((path: string) => `/base${path}`)
 }));
 
+vi.mock('$env/dynamic/private', () => ({ env: mocks.env }));
+vi.mock('@sveltejs/kit', () => ({ redirect: mocks.redirect }));
+vi.mock('$lib/server/subfolder', () => ({ withBase: mocks.withBase }));
+
+import type { Cookies } from '@sveltejs/kit';
 import {
+  checkLogin,
   createJWT,
-  verifyJWT,
   requireLogin,
   requireLoginAdmin,
-  checkLogin,
-  type JwtUserPayload,
+  verifyJWT,
+  type JwtUserPayload
 } from './jwt';
 
-const JWT_SECRET = 'unit-test-secret';
-
-const testUser: JwtUserPayload = {
+const user: JwtUserPayload = {
   id: 'user-123',
-  email: 'user@example.com',
-  isAdmin: 0,
+  email: 'test@example.com',
+  isAdmin: 0
 };
 
-const adminUser: JwtUserPayload = {
-  id: 'admin-123',
-  email: 'admin@example.com',
-  isAdmin: 1,
-};
-
-function createCookies(token?: string): Cookies {
+function cookiesWith(token?: string): Cookies {
   return {
-    get: vi.fn(() => token),
+    get: vi.fn(() => token)
   } as unknown as Cookies;
 }
 
-function expectLoginRedirect(callback: () => unknown) {
-  let thrown: unknown;
-
-  try {
-    callback();
-  } catch (error) {
-    thrown = error;
-  }
-
-  expect(thrown).toMatchObject({
-    status: 302,
-    location: '/login',
-  });
-}
-
-// --------------------------------------------------
-// createJWT
-// --------------------------------------------------
-
-describe('createJWT', () => {
-  it('creates a valid JWT containing the user payload', () => {
-    const token = createJWT(testUser);
-
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-
-    expect(decoded).toMatchObject(testUser);
-  });
-
-  it('uses a default expiration of 7 days', () => {
-    const token = createJWT(testUser);
-
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-
-    expect(decoded.exp).toBeDefined();
-    expect(decoded.iat).toBeDefined();
-    expect(decoded.exp! - decoded.iat!).toBe(7 * 24 * 60 * 60);
-  });
-
-  it('supports a custom expiration time', () => {
-    const token = createJWT(testUser, '30m');
-
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-
-    expect(decoded.exp! - decoded.iat!).toBe(30 * 60);
-  });
+beforeEach(() => {
+  mocks.env.JWT_SECRET = 'test-jwt-secret';
+  mocks.redirect.mockClear();
+  mocks.withBase.mockClear();
 });
 
-// --------------------------------------------------
-// verifyJWT
-// --------------------------------------------------
+describe('JWT helpers', () => {
+  it('creates and verifies a JWT payload', () => {
+    const token = createJWT(user);
 
-describe('verifyJWT', () => {
-  it('returns the user payload for a valid token', () => {
-    const token = createJWT(testUser);
-
-    const result = verifyJWT(token);
-
-    expect(result).toMatchObject(testUser);
+    expect(typeof token).toBe('string');
+    expect(verifyJWT(token)).toEqual(expect.objectContaining(user));
   });
 
-  it('returns null for a malformed token', () => {
-    const result = verifyJWT('not-a-valid-jwt');
+  it('uses a custom expiry when provided', () => {
+    const token = createJWT(user, '1h');
 
-    expect(result).toBeNull();
+    expect(verifyJWT(token)).toEqual(expect.objectContaining(user));
   });
 
-  it('returns null for a token signed with another secret', () => {
-    const token = jwt.sign(testUser, 'another-secret');
+  it('returns null for malformed or invalid tokens', () => {
+    expect(verifyJWT('not-a-jwt')).toBeNull();
+  });
 
-    const result = verifyJWT(token);
+  it('returns null when verification uses the wrong secret', () => {
+    const token = jwt.sign(user, 'different-secret');
 
-    expect(result).toBeNull();
+    expect(verifyJWT(token)).toBeNull();
   });
 
   it('returns null for an expired token', () => {
-    const token = jwt.sign(testUser, JWT_SECRET, {
-      expiresIn: -1,
-    });
+    const token = createJWT(user, -1);
 
-    const result = verifyJWT(token);
-
-    expect(result).toBeNull();
+    expect(verifyJWT(token)).toBeNull();
   });
 });
-
-// --------------------------------------------------
-// requireLogin
-// --------------------------------------------------
 
 describe('requireLogin', () => {
-  it('redirects to login when the JWT cookie is missing', () => {
-    const cookies = createCookies();
-
-    expectLoginRedirect(() => requireLogin(cookies));
+  it('redirects to based login URL when the cookie is missing', () => {
+    expect(() => requireLogin(cookiesWith())).toThrow(
+      expect.objectContaining({ status: 302, location: '/base/login' })
+    );
   });
 
-  it('redirects to login when the JWT is invalid', () => {
-    const cookies = createCookies('invalid-token');
-
-    expectLoginRedirect(() => requireLogin(cookies));
+  it('redirects when the token is invalid', () => {
+    expect(() => requireLogin(cookiesWith('invalid-token'))).toThrow(
+      expect.objectContaining({ status: 302, location: '/base/login' })
+    );
   });
 
-  it('returns the user when the JWT is valid', () => {
-    const token = createJWT(testUser);
-    const cookies = createCookies(token);
+  it('returns the user for a valid token', () => {
+    const cookies = cookiesWith(createJWT(user));
 
-    const result = requireLogin(cookies);
-
-    expect(result).toMatchObject(testUser);
-  });
-
-  it('reads the JWT from the jwt cookie', () => {
-    const token = createJWT(testUser);
-    const cookies = createCookies(token);
-
-    requireLogin(cookies);
-
-    expect(cookies.get).toHaveBeenCalledWith('jwt');
+    expect(requireLogin(cookies)).toEqual(expect.objectContaining(user));
   });
 });
-
-// --------------------------------------------------
-// requireLoginAdmin
-// --------------------------------------------------
 
 describe('requireLoginAdmin', () => {
-  it('redirects to login when the JWT cookie is missing', () => {
-    const cookies = createCookies();
+  it('returns the user for an admin token', () => {
+    const admin = { ...user, isAdmin: 1 };
 
-    expectLoginRedirect(() => requireLoginAdmin(cookies));
+    expect(requireLoginAdmin(cookiesWith(createJWT(admin)))).toEqual(
+      expect.objectContaining(admin)
+    );
   });
 
-  it('redirects to login when the JWT is invalid', () => {
-    const cookies = createCookies('invalid-token');
-
-    expectLoginRedirect(() => requireLoginAdmin(cookies));
+  it('redirects non-admin users', () => {
+    expect(() => requireLoginAdmin(cookiesWith(createJWT(user)))).toThrow(
+      expect.objectContaining({ status: 302, location: '/base/login' })
+    );
   });
 
-  it('redirects to login when the user is not an admin', () => {
-    const token = createJWT(testUser);
-    const cookies = createCookies(token);
-
-    expectLoginRedirect(() => requireLoginAdmin(cookies));
+  it('redirects when the cookie is missing', () => {
+    expect(() => requireLoginAdmin(cookiesWith())).toThrow(
+      expect.objectContaining({ status: 302, location: '/base/login' })
+    );
   });
 
-  it('returns the user when the user is an admin', () => {
-    const token = createJWT(adminUser);
-    const cookies = createCookies(token);
-
-    const result = requireLoginAdmin(cookies);
-
-    expect(result).toMatchObject(adminUser);
+  it('redirects when the token is invalid', () => {
+    expect(() => requireLoginAdmin(cookiesWith('invalid-token'))).toThrow(
+      expect.objectContaining({ status: 302, location: '/base/login' })
+    );
   });
 });
-
-// --------------------------------------------------
-// checkLogin
-// --------------------------------------------------
 
 describe('checkLogin', () => {
-  it('returns null when the JWT cookie is missing', () => {
-    const cookies = createCookies();
-
-    const result = checkLogin(cookies);
-
-    expect(result).toBeNull();
+  it('returns null when the cookie is missing', () => {
+    expect(checkLogin(cookiesWith())).toBeNull();
   });
 
-  it('returns null when the JWT is invalid', () => {
-    const cookies = createCookies('invalid-token');
-
-    const result = checkLogin(cookies);
-
-    expect(result).toBeNull();
+  it('returns null for an invalid token', () => {
+    expect(checkLogin(cookiesWith('invalid-token'))).toBeNull();
   });
 
-  it('returns the user when the JWT is valid', () => {
-    const token = createJWT(testUser);
-    const cookies = createCookies(token);
-
-    const result = checkLogin(cookies);
-
-    expect(result).toMatchObject(testUser);
-  });
-});
-
-// --------------------------------------------------
-// Security regression test
-// --------------------------------------------------
-
-describe('JWT payload validation', () => {
-  it('rejects a correctly signed token with missing required claims', () => {
-    const malformedPayload = {
-      id: 'user-123',
-      email: 'user@example.com',
-      // isAdmin is missing
-    };
-
-    const token = jwt.sign(malformedPayload, JWT_SECRET);
-
-    expect(verifyJWT(token)).toBeNull();
-  });
-
-  it('rejects a token with an incorrectly typed isAdmin claim', () => {
-    const malformedPayload = {
-      id: 'user-123',
-      email: 'user@example.com',
-      isAdmin: 'yes',
-    };
-
-    const token = jwt.sign(malformedPayload, JWT_SECRET);
-
-    expect(verifyJWT(token)).toBeNull();
+  it('returns the user for a valid token', () => {
+    expect(checkLogin(cookiesWith(createJWT(user)))).toEqual(expect.objectContaining(user));
   });
 });

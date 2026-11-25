@@ -1,195 +1,111 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi
-} from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { prisma } from '$lib/server/db';
-import { v4 as uuidv4 } from 'uuid';
+const mocks = vi.hoisted(() => ({
+  uuidv4: vi.fn(),
+  userFindUnique: vi.fn(),
+  badgeFindFirst: vi.fn(),
+  resetFindUnique: vi.fn()
+}));
 
-import {
-  newUserUUID,
-  newBadgeHash,
-  newPwResetToken
-} from './dbUtils';
+vi.mock('uuid', () => ({ v4: mocks.uuidv4 }));
 
-// Mock Prisma
 vi.mock('$lib/server/db', () => ({
   prisma: {
-    user: {
-      findUnique: vi.fn()
-    },
-    badge: {
-      findFirst: vi.fn()
-    },
-    userPasswordReset: {
-      findUnique: vi.fn()
-    }
+    user: { findUnique: mocks.userFindUnique },
+    badge: { findFirst: mocks.badgeFindFirst },
+    userPasswordReset: { findUnique: mocks.resetFindUnique }
   }
 }));
 
-// Mock UUID generator
-vi.mock('uuid', () => ({
-  v4: vi.fn()
-}));
+import { newBadgeHash, newPwResetToken, newUserUUID } from './dbUtils';
 
 beforeEach(() => {
-  vi.resetAllMocks();
-});
-
-afterEach(() => {
+  vi.clearAllMocks();
   vi.restoreAllMocks();
 });
 
 describe('newUserUUID', () => {
-  it('should return a UUID when it does not already exist', async () => {
-    vi.mocked(uuidv4).mockReturnValueOnce('uuid-123' as never);
+  it('returns a UUID that is not already in use', async () => {
+    mocks.uuidv4
+      .mockReturnValueOnce('existing-user-id')
+      .mockReturnValueOnce('available-user-id');
+    mocks.userFindUnique
+      .mockResolvedValueOnce({ id: 'existing-user-id' })
+      .mockResolvedValueOnce(null);
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
+    await expect(newUserUUID()).resolves.toBe('available-user-id');
 
-    const result = await newUserUUID();
-
-    expect(result).toBe('uuid-123');
-
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({
-      where: {
-        id: 'uuid-123'
-      }
+    expect(mocks.userFindUnique).toHaveBeenNthCalledWith(1, {
+      where: { id: 'existing-user-id' }
+    });
+    expect(mocks.userFindUnique).toHaveBeenNthCalledWith(2, {
+      where: { id: 'available-user-id' }
     });
   });
 
-  it('should generate another UUID when the first UUID already exists', async () => {
-    vi.mocked(uuidv4)
-      .mockReturnValueOnce('uuid-existing' as never)
-      .mockReturnValueOnce('uuid-new' as never);
+  it('returns immediately when the generated UUID is available', async () => {
+    mocks.uuidv4.mockReturnValue('free-user-id');
+    mocks.userFindUnique.mockResolvedValue(null);
 
-    vi.mocked(prisma.user.findUnique)
-      .mockResolvedValueOnce({ id: 'uuid-existing' } as never)
-      .mockResolvedValueOnce(null);
-
-    const result = await newUserUUID();
-
-    expect(result).toBe('uuid-new');
-
-    expect(uuidv4).toHaveBeenCalledTimes(2);
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(2);
-
-    expect(prisma.user.findUnique).toHaveBeenNthCalledWith(1, {
-      where: {
-        id: 'uuid-existing'
-      }
-    });
-
-    expect(prisma.user.findUnique).toHaveBeenNthCalledWith(2, {
-      where: {
-        id: 'uuid-new'
-      }
-    });
+    await expect(newUserUUID()).resolves.toBe('free-user-id');
+    expect(mocks.userFindUnique).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('newBadgeHash', () => {
-  it('should return a badge hash with the supplied prefix and six-digit suffix', async () => {
-    // Math.floor(0.000042 * 1000000) = 42
-    vi.spyOn(Math, 'random').mockReturnValueOnce(0.000042);
+  it('returns a hash that is not used by the same user', async () => {
+    vi.spyOn(Math, 'random')
+      .mockReturnValueOnce(0.1)
+      .mockReturnValueOnce(0.123456);
+    mocks.badgeFindFirst
+      .mockResolvedValueOnce({ hash: '3100000' })
+      .mockResolvedValueOnce(null);
 
-    vi.mocked(prisma.badge.findFirst).mockResolvedValueOnce(null);
+    await expect(newBadgeHash('user-1', 3)).resolves.toBe('3123456');
 
-    const result = await newBadgeHash('user-123', 7);
-
-    expect(result).toBe('7000042');
-
-    expect(prisma.badge.findFirst).toHaveBeenCalledTimes(1);
-    expect(prisma.badge.findFirst).toHaveBeenCalledWith({
-      where: {
-        hash: '7000042',
-        userId: 'user-123'
-      }
+    expect(mocks.badgeFindFirst).toHaveBeenNthCalledWith(1, {
+      where: { hash: '3100000', userId: 'user-1' }
+    });
+    expect(mocks.badgeFindFirst).toHaveBeenNthCalledWith(2, {
+      where: { hash: '3123456', userId: 'user-1' }
     });
   });
 
-  it('should generate another badge hash when the first hash already exists', async () => {
-    // First random number: 123456
-    // Second random number: 000007
-    vi.spyOn(Math, 'random')
-      .mockReturnValueOnce(0.123456)
-      .mockReturnValueOnce(0.000007);
+  it('pads the random number to six digits', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mocks.badgeFindFirst.mockResolvedValue(null);
 
-    vi.mocked(prisma.badge.findFirst)
-      .mockResolvedValueOnce({ hash: '3123456' } as never)
-      .mockResolvedValueOnce(null);
-
-    const result = await newBadgeHash('user-456', 3);
-
-    expect(result).toBe('3000007');
-
-    expect(prisma.badge.findFirst).toHaveBeenCalledTimes(2);
-
-    expect(prisma.badge.findFirst).toHaveBeenNthCalledWith(1, {
-      where: {
-        hash: '3123456',
-        userId: 'user-456'
-      }
-    });
-
-    expect(prisma.badge.findFirst).toHaveBeenNthCalledWith(2, {
-      where: {
-        hash: '3000007',
-        userId: 'user-456'
-      }
+    await expect(newBadgeHash('user-1', 7)).resolves.toBe('7000000');
+    expect(mocks.badgeFindFirst).toHaveBeenCalledWith({
+      where: { hash: '7000000', userId: 'user-1' }
     });
   });
 });
 
 describe('newPwResetToken', () => {
-  it('should return a token when it does not already exist', async () => {
-    vi.mocked(uuidv4).mockReturnValueOnce('token-123' as never);
-
-    vi.mocked(prisma.userPasswordReset.findUnique)
+  it('returns a password reset token that is not already in use', async () => {
+    mocks.uuidv4
+      .mockReturnValueOnce('existing-reset-token')
+      .mockReturnValueOnce('available-reset-token');
+    mocks.resetFindUnique
+      .mockResolvedValueOnce({ token: 'existing-reset-token' })
       .mockResolvedValueOnce(null);
 
-    const result = await newPwResetToken();
+    await expect(newPwResetToken()).resolves.toBe('available-reset-token');
 
-    expect(result).toBe('token-123');
-
-    expect(prisma.userPasswordReset.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.userPasswordReset.findUnique).toHaveBeenCalledWith({
-      where: {
-        token: 'token-123'
-      }
+    expect(mocks.resetFindUnique).toHaveBeenNthCalledWith(1, {
+      where: { token: 'existing-reset-token' }
+    });
+    expect(mocks.resetFindUnique).toHaveBeenNthCalledWith(2, {
+      where: { token: 'available-reset-token' }
     });
   });
 
-  it('should generate another token when the first token already exists', async () => {
-    vi.mocked(uuidv4)
-      .mockReturnValueOnce('token-existing' as never)
-      .mockReturnValueOnce('token-new' as never);
+  it('returns immediately when the generated token is available', async () => {
+    mocks.uuidv4.mockReturnValue('free-reset-token');
+    mocks.resetFindUnique.mockResolvedValue(null);
 
-    vi.mocked(prisma.userPasswordReset.findUnique)
-      .mockResolvedValueOnce({ token: 'token-existing' } as never)
-      .mockResolvedValueOnce(null);
-
-    const result = await newPwResetToken();
-
-    expect(result).toBe('token-new');
-
-    expect(uuidv4).toHaveBeenCalledTimes(2);
-    expect(prisma.userPasswordReset.findUnique).toHaveBeenCalledTimes(2);
-
-    expect(prisma.userPasswordReset.findUnique).toHaveBeenNthCalledWith(1, {
-      where: {
-        token: 'token-existing'
-      }
-    });
-
-    expect(prisma.userPasswordReset.findUnique).toHaveBeenNthCalledWith(2, {
-      where: {
-        token: 'token-new'
-      }
-    });
+    await expect(newPwResetToken()).resolves.toBe('free-reset-token');
+    expect(mocks.resetFindUnique).toHaveBeenCalledTimes(1);
   });
 });
